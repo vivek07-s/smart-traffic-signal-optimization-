@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Traffic Signal Optimisation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="masthead">
+      <div class="brand-bar">
+        <div>
+          
+          <h1>Adaptive traffic orchestration for a four-way junction.</h1>
+        </div>
+        <div class="brand-pills">
+          <button class="pill-button" id="priority-pulse" type="button">Priority pulse</button>
+          <button class="pill-button" id="emergency-mode" type="button">Emergency override</button>
+          <button class="pill-button" id="capacity-test" type="button">Capacity test</button>
+        </div>
+      </div>
+
+      <div class="hero-grid">
+        <section class="hero-panel overview-panel">
+          <p class="section-kicker">Network overview</p>
+          <h2>Shape the intersection in real time and watch the controller rebalance pressure across every approach.</h2>
+          <p class="lede">
+            Morning inflow, evening outbound demand, emergency priority, and partial lane blockage all update the same
+            decision engine. The interface below presents the queue state, the active signal decision, and the throughput
+            delta against a fixed-time baseline.
+          </p>
+
+          <div class="hero-actions">
+            <button class="button primary" id="run-cycle">Advance cycle</button>
+            <button class="button secondary" id="reset-state">Reset network</button>
+          </div>
+        </section>
+
+        <section class="hero-panel top-metrics">
+          <div class="metric-card emphasis">
+            <span class="metric-label">Current allocation</span>
+            <strong id="selected-lane">North</strong>
+            <p id="signal-caption">Green corridor assigned to North</p>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Adaptive green window</span>
+            <strong id="green-time">28s</strong>
+            <p>Calculated from live queue depth</p>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Pattern</span>
+            <strong id="active-pattern">Morning Rush</strong>
+            <p id="pattern-detail">High inbound load from North and East</p>
+          </div>
+        </section>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <section class="panel control-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-kicker">Scenario studio</p>
+            <h2>Traffic patterns</h2>
+          </div>
+          <p>Choose a pressure profile, then introduce special conditions to see how the signal controller responds.</p>
+        </div>
+
+        <div class="scenario-grid" id="scenario-grid"></div>
+
+        <div class="toggle-cluster">
+          <label class="toggle">
+            <input type="checkbox" id="emergency-toggle">
+            <span>Inject emergency vehicle into South approach</span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="blockage-toggle">
+            <span>Reduce East capacity by 50 percent</span>
+          </label>
+        </div>
+
+        <div class="status-strip">
+          <div class="status-chip">
+            <span class="status-dot live"></span>
+            <span id="network-state">Priority controller active</span>
+          </div>
+          <div class="status-chip">
+            <span class="status-dot warning"></span>
+            <span id="network-alert">No active incident</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel intersection-panel">
+        <div class="panel-heading split">
+          <div>
+            <p class="section-kicker">Intersection map</p>
+            <h2>Signal field</h2>
+          </div>
+          <div class="signal-legend">
+            <span><i class="legend-dot green"></i>Allocated</span>
+            <span><i class="legend-dot amber"></i>Constrained</span>
+            <span><i class="legend-dot red"></i>Emergency priority</span>
+          </div>
+        </div>
+
+        <div class="intersection" id="intersection">
+          <div class="lane-card north" data-lane="North">
+            <div class="lane-head">
+              <span class="lane-name">North</span>
+              <span class="lane-badge" id="badge-North">Open</span>
+            </div>
+            <strong class="lane-count" id="count-North">0</strong>
+            <span class="lane-meta" id="meta-North">Wait 0s | Priority 0.00 | Cap 50</span>
+            <div class="lane-bar"><span id="bar-North"></span></div>
+          </div>
+          <div class="lane-card west" data-lane="West">
+            <div class="lane-head">
+              <span class="lane-name">West</span>
+              <span class="lane-badge" id="badge-West">Open</span>
+            </div>
+            <strong class="lane-count" id="count-West">0</strong>
+            <span class="lane-meta" id="meta-West">Wait 0s | Priority 0.00 | Cap 50</span>
+            <div class="lane-bar"><span id="bar-West"></span></div>
+          </div>
+          <div class="signal-core">
+            <div class="signal-stack" id="signal-stack">
+              <span class="signal-dot red"></span>
+              <span class="signal-dot yellow"></span>
+              <span class="signal-dot green active"></span>
+            </div>
+            <p class="signal-title">Live allocation</p>
+            <p id="signal-core-text">North corridor has green priority</p>
+          </div>
+          <div class="lane-card east" data-lane="East">
+            <div class="lane-head">
+              <span class="lane-name">East</span>
+              <span class="lane-badge" id="badge-East">Open</span>
+            </div>
+            <strong class="lane-count" id="count-East">0</strong>
+            <span class="lane-meta" id="meta-East">Wait 0s | Priority 0.00 | Cap 50</span>
+            <div class="lane-bar"><span id="bar-East"></span></div>
+          </div>
+          <div class="lane-card south" data-lane="South">
+            <div class="lane-head">
+              <span class="lane-name">South</span>
+              <span class="lane-badge" id="badge-South">Open</span>
+            </div>
+            <strong class="lane-count" id="count-South">0</strong>
+            <span class="lane-meta" id="meta-South">Wait 0s | Priority 0.00 | Cap 50</span>
+            <div class="lane-bar"><span id="bar-South"></span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel analytics-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-kicker">Performance layer</p>
+            <h2>Operational analytics</h2>
+          </div>
+          <p>A wider view of throughput, pressure, and the current optimization logic.</p>
+        </div>
+
+        <div class="analytics-grid">
+          <div class="metric-card dark">
+            <span class="metric-label">Vehicles processed</span>
+            <strong id="processed-count">0</strong>
+            <p>Cumulative clearances across simulated cycles</p>
+          </div>
+          <div class="metric-card dark">
+            <span class="metric-label">Average waiting time</span>
+            <strong id="average-wait">0.0s</strong>
+            <p>Weighted across all current queues</p>
+          </div>
+          <div class="metric-card dark">
+            <span class="metric-label">Greedy throughput</span>
+            <strong id="greedy-estimate">0 vehicles</strong>
+            <p>Vehicles expected to clear in this window</p>
+          </div>
+          <div class="metric-card dark">
+            <span class="metric-label">Fixed-time baseline</span>
+            <strong id="fixed-estimate">15 vehicles</strong>
+            <p>Round-robin estimate using a 30 second phase</p>
+          </div>
+        </div>
+
+        <div class="insight-row">
+          <div class="insight-block formula">
+            <p class="formula-title">Selection logic</p>
+            <code>priority = (vehicles x average wait) / effective capacity</code>
+            <p id="explanation">
+              The controller currently favours North because its queue and waiting pressure produce the strongest priority score.
+            </p>
+          </div>
+
+          <div class="insight-block">
+            <p class="formula-title">Cycle record</p>
+            <div class="timeline" id="timeline"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel table-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-kicker">Lane diagnostics</p>
+            <h2>Approach health table</h2>
+          </div>
+          <p>Each lane combines queue depth, observed delay, computed priority, and available capacity.</p>
+        </div>
+
+        <div class="lane-table" id="lane-table"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
